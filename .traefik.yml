@@ -1,0 +1,7 @@
+displayName: Maintenance page
+summary: Show a maintenance page based on host regex and ip whitelist
+type: middleware
+import: github.com/programic/traefik-maintenance-plugin
+
+testData:
+  lastModified: true

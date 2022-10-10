@@ -1,0 +1,7 @@
+http:
+  middlewares:
+    my-maintenance:
+      plugin:
+        maintenance:
+          headers:
+            Foo: Bar

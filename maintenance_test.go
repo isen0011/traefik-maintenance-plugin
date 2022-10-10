@@ -1,0 +1,1 @@
+package traefik_maintenance_plugin
