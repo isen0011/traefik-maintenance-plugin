@@ -30,10 +30,17 @@ func New(_ context.Context, next http.Handler, config *Config, name string) (htt
 
 func (a *Maintenance) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if true {
-		rw.WriteHeader(http.StatusServiceUnavailable)
+		bodyBytes := []byte("Deze pagina is in onderhoud.")
+
+		rw.Header().Del("Last-Modified")
 		rw.Header().Del("Content-Length")
 
-		bodyBytes := []byte("Deze pagina is even niet bereikbaar.")
+		if req.Header.Get("Accept") == "application/json" {
+			rw.Header().Set("Content-Type", "application/json")
+			bodyBytes = []byte("{}")
+		}
+
+		rw.WriteHeader(http.StatusServiceUnavailable)
 
 		if _, err := rw.Write(bodyBytes); err != nil {
 			log.Printf("unable to write rewrited body: %v", err)
