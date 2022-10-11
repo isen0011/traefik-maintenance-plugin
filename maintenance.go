@@ -6,7 +6,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -22,29 +21,42 @@ type Host struct {
 }
 
 type Maintenance struct {
-	name     string
-	next     http.Handler
-	config   *Config
-	bodyHtml []byte
-	bodyJson []byte
+	name   string
+	next   http.Handler
+	config *Config
 }
 
 // Global variables
-var pwd = "/plugins-local/src/github.com/programic/traefik-maintenance-plugin"
 var hosts []Host
 
 func CreateConfig() *Config {
 	return &Config{}
 }
 
-// Read a file from the file system and return the data
-func ReadFile(file string) []byte {
-	data, err := os.ReadFile(pwd + "/" + file)
-	if err != nil {
-		log.Fatalf("ReadFile: %v", err)
-	}
+// Html body of the maintenance page
+func tplBodyHtml() []byte {
+	return []byte(`<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Under maintenance</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="text-center grid place-items-center h-screen">
+	<div>
+	<h1 class="text-3xl font-bold mb-2">
+		This page is under maintenance
+	</h1>
+	<p>Please come back later.</p>
+	</div>
+</body>
+</html>`)
+}
 
-	return data
+// Json body of the maintenance page
+func tplBodyJson() []byte {
+	return []byte("{\"message\": \"This page is under maintenance. Please come back later.\"}")
 }
 
 // Inform if there are hosts in maintenance
@@ -126,11 +138,9 @@ func New(_ context.Context, next http.Handler, config *Config, name string) (htt
 	go Inform(config.InformUrl)
 
 	return &Maintenance{
-		name:     name,
-		next:     next,
-		config:   config,
-		bodyHtml: ReadFile("maintenance.html"),
-		bodyJson: ReadFile("maintenance.json"),
+		name:   name,
+		next:   next,
+		config: config,
 	}, nil
 }
 
@@ -145,9 +155,9 @@ func (a *Maintenance) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		if req.Header.Get("Accept") == "application/json" {
 			rw.Header().Set("Content-Type", "application/json; charset=utf-8")
 
-			body = getBodyJson()
+			body = tplBodyJson()
 		} else {
-			body = getBodyHtml()
+			body = tplBodyHtml()
 		}
 
 		rw.WriteHeader(http.StatusServiceUnavailable)
