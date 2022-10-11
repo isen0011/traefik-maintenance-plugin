@@ -4,4 +4,4 @@ type: middleware
 import: github.com/programic/traefik-maintenance-plugin
 
 testData:
-  lastModified: true
+  informUrl: "https://programic.com/themes/programic/assets/hosts.json"

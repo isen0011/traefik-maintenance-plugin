@@ -2,17 +2,19 @@ package traefik_maintenance_plugin
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 var pwd = "/plugins-local/src/github.com/programic/traefik-maintenance-plugin"
 
 type Config struct {
-	LastModified bool `json:"lastModified,omitempty"`
+	InformUrl string `json:"informUrl,omitempty"`
 }
 
 func CreateConfig() *Config {
@@ -61,17 +63,56 @@ func matchHost(req *http.Request) bool {
 	return true
 }
 
+var hosts Hosts
+
+type Host struct {
+	Regex    string
+	AllowIps []string
+}
+
+type Hosts struct {
+	Hosts []Host
+}
+
+func inform(informUrl string) {
+	t := time.NewTicker(5 * time.Second)
+	for ; true; <-t.C {
+
+		client := http.Client{
+			Timeout: time.Second * 5,
+		}
+
+		req, _ := http.NewRequest(http.MethodGet, informUrl, nil)
+		res, doErr := client.Do(req)
+		if doErr != nil {
+			log.Fatal(doErr)
+		}
+
+		defer res.Body.Close()
+
+		decoder := json.NewDecoder(res.Body)
+		decodeErr := decoder.Decode(&hosts)
+		if decodeErr != nil {
+			log.Fatal(decodeErr)
+		}
+	}
+}
+
 type Maintenance struct {
 	name     string
 	next     http.Handler
+	config   *Config
 	bodyHtml []byte
 	bodyJson []byte
 }
 
 func New(_ context.Context, next http.Handler, config *Config, name string) (http.Handler, error) {
+	go inform(config.InformUrl)
+
 	return &Maintenance{
 		name:     name,
 		next:     next,
+		config:   config,
 		bodyHtml: ReadFile("maintenance.html"),
 		bodyJson: ReadFile("maintenance.json"),
 	}, nil
@@ -80,6 +121,8 @@ func New(_ context.Context, next http.Handler, config *Config, name string) (htt
 func (a *Maintenance) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	block := false
+
+	log.Println(hosts.Hosts)
 
 	if matchHost(req) {
 		if !matchIps(req) {

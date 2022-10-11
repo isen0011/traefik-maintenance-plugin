@@ -3,5 +3,4 @@ http:
     my-maintenance:
       plugin:
         maintenance:
-          headers:
-            Foo: Bar
+          informUrl: "https://programic.com/themes/programic/assets/hosts.json"
