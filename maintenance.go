@@ -145,9 +145,9 @@ func (a *Maintenance) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		if req.Header.Get("Accept") == "application/json" {
 			rw.Header().Set("Content-Type", "application/json; charset=utf-8")
 
-			body = a.bodyJson
+			body = getBodyJson()
 		} else {
-			body = a.bodyHtml
+			body = getBodyHtml()
 		}
 
 		rw.WriteHeader(http.StatusServiceUnavailable)
