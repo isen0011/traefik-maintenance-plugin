@@ -1,6 +1,0 @@
-http:
-  middlewares:
-    my-maintenance:
-      plugin:
-        maintenance:
-          informUrl: "https://programic.com/themes/programic/assets/hosts.json"

@@ -41,7 +41,7 @@ var hosts []Host
 
 func CreateConfig() *Config {
 	return &Config{
-		InformInterval: 5,
+		InformInterval: 60,
 		InformTimeout:  5,
 	}
 }
@@ -98,7 +98,7 @@ func GetClientIps(req *http.Request) []string {
 	return ips
 }
 
-// Check if one of the ips has access
+// Check if one of the client ips has access
 func CheckIpAllowed(req *http.Request, host Host) bool {
 	for _, ip := range GetClientIps(req) {
 		for _, allowIp := range host.AllowIps {

@@ -1,12 +1,12 @@
 [
   {
-    "regex": "whoami.test",
+    "regex": "maintenance.test",
     "allowIps": [
       "172.18.0.1"
     ]
   }, 
   {
-    "regex": "app.whoami.test",
+    "regex": "app.maintenance.test",
     "allowIps": [
       "172.18.0.1"
     ]
