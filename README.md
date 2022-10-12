@@ -1,6 +1,10 @@
 # Traefik Maintenance Plugin by Programic
 
-Traefik maintenance plugin to show visitors a maintenance page. This plugin can be used for example when upgrading a production environment.
+Traefik maintenance plugin to show visitors a maintenance page. Useful when upgrading a production environment. 
+
+Hosts (by regex) that are under maintenance are retrieved using an http request to an inform url. Permitted ips are retained (such as development) and other visitors receive a maintenance page with status code 503 Service Unavailable.
+
+This plugin returns the correct response based on the `Content-Type` header. Currently `application/json`, `text/plain` and `text/html`.
 
 ## Configuration
 
@@ -10,12 +14,11 @@ The following declaration (given here in YAML) defines a plugin:
 
 ```yaml
 # Static configuration
-# File: test/services/traefik/traefik.yml
 
 experimental:
-  localPlugins:
-    maintenance:
-      moduleName: github.com/programic/traefik-maintenance-plugin
+  maintenance:
+    moduleName: github.com/programic/traefik-maintenance-plugin
+    version: "v0.0.1" # Grep the latest version 
 
 ```
 
@@ -23,7 +26,6 @@ Here is an example of a file provider dynamic configuration (given here in YAML)
 
 ```yaml
 # Dynamic configuration
-# File: test/services/traefik/dynamic/middleware.yml
 
 http:
   middlewares:
@@ -61,8 +63,9 @@ $ docker-compose up -d
 
 1. Go to [maintenance.test](http://maintenance.test). 
 2. You will now see a maintenance page or a welcome page.
-3. Change the ip in file `test/services/inform/inform.json` to your local Docker ip address.
+3. Change the ip in file `test/services/inform/inform.json` to your Docker network ip.
 4. Go back to the [maintenance.test](http://maintenance.test) and see what happened.
+5. Check what a [json](http://maintenance.test/test.json) or [png](http://maintenance.test/test.png) response looks like.
 
 ### 3. Happy coding!
 
