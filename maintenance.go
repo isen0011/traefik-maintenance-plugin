@@ -1,9 +1,11 @@
 package traefik_maintenance_plugin
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"log"
+	"mime"
 	"net"
 	"net/http"
 	"regexp"
@@ -12,7 +14,9 @@ import (
 )
 
 type Config struct {
-	InformUrl string `json:"informUrl,omitempty"`
+	InformUrl      string        `yaml:"informUrl"`
+	InformInterval time.Duration `yaml:"informInterval"`
+	InformTimeout  time.Duration `yaml:"informTimeout"`
 }
 
 type Host struct {
@@ -26,49 +30,33 @@ type Maintenance struct {
 	config *Config
 }
 
+type ResponseWriter struct {
+	buffer bytes.Buffer
+
+	http.ResponseWriter
+}
+
 // Global variables
 var hosts []Host
 
 func CreateConfig() *Config {
-	return &Config{}
-}
-
-// Html body of the maintenance page
-func tplBodyHtml() []byte {
-	return []byte(`<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Under maintenance</title>
-	<script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="text-center grid place-items-center h-screen">
-	<div>
-	<h1 class="text-3xl font-bold mb-2">
-		This page is under maintenance
-	</h1>
-	<p>Please come back later.</p>
-	</div>
-</body>
-</html>`)
-}
-
-// Json body of the maintenance page
-func tplBodyJson() []byte {
-	return []byte("{\"message\": \"This page is under maintenance. Please come back later.\"}")
+	return &Config{
+		InformInterval: 5,
+		InformTimeout:  5,
+	}
 }
 
 // Inform if there are hosts in maintenance
-func Inform(informUrl string) {
-	t := time.NewTicker(5 * time.Second)
-	for ; true; <-t.C {
+func Inform(config *Config) {
+	t := time.NewTicker(time.Second * config.InformInterval)
+	defer t.Stop()
 
+	for ; true; <-t.C {
 		client := http.Client{
-			Timeout: time.Second * 5,
+			Timeout: time.Second * config.InformTimeout,
 		}
 
-		req, _ := http.NewRequest(http.MethodGet, informUrl, nil)
+		req, _ := http.NewRequest(http.MethodGet, config.InformUrl, nil)
 		res, doErr := client.Do(req)
 		if doErr != nil {
 			log.Printf("Inform: %v", doErr) // Don't fatal, just go further
@@ -134,8 +122,23 @@ func CheckIfMaintenance(req *http.Request) bool {
 	return false
 }
 
+func (rw *ResponseWriter) Header() http.Header {
+	return rw.ResponseWriter.Header()
+}
+
+func (rw *ResponseWriter) Write(bytes []byte) (int, error) {
+	return rw.buffer.Write(bytes)
+}
+
+func (rw *ResponseWriter) WriteHeader(statusCode int) {
+	rw.ResponseWriter.Header().Del("Last-Modified")
+	rw.ResponseWriter.Header().Del("Content-Length")
+
+	rw.ResponseWriter.WriteHeader(http.StatusServiceUnavailable)
+}
+
 func New(_ context.Context, next http.Handler, config *Config, name string) (http.Handler, error) {
-	go Inform(config.InformUrl)
+	go Inform(config)
 
 	return &Maintenance{
 		name:   name,
@@ -145,26 +148,23 @@ func New(_ context.Context, next http.Handler, config *Config, name string) (htt
 }
 
 func (a *Maintenance) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+
 	if CheckIfMaintenance(req) {
-
-		var body []byte
-
-		rw.Header().Del("Last-Modified")
-		rw.Header().Del("Content-Length")
-
-		if req.Header.Get("Accept") == "application/json" {
-			rw.Header().Set("Content-Type", "application/json; charset=utf-8")
-
-			body = tplBodyJson()
-		} else {
-			body = tplBodyHtml()
+		wrappedWriter := &ResponseWriter{
+			ResponseWriter: rw,
 		}
 
-		rw.WriteHeader(http.StatusServiceUnavailable)
+		a.next.ServeHTTP(wrappedWriter, req)
 
-		if _, err := rw.Write(body); err != nil {
-			log.Printf("ServeHTTP: %v", err)
+		bytes := []byte{}
+
+		contentType := wrappedWriter.Header().Get("Content-Type")
+		if contentType != "" {
+			mt, _, _ := mime.ParseMediaType(contentType)
+			bytes = getTemplate(mt)
 		}
+
+		rw.Write(bytes)
 
 		if flusher, ok := rw.(http.Flusher); ok {
 			flusher.Flush()
@@ -174,4 +174,37 @@ func (a *Maintenance) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	a.next.ServeHTTP(rw, req)
+}
+
+// Maintenance page templates
+func getTemplate(mediaType string) []byte {
+	switch mediaType {
+
+	case "text/html":
+		return []byte(`<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Under maintenance</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="text-center grid place-items-center h-screen">
+	<div>
+	<h1 class="text-3xl font-bold mb-2">
+		This page is under maintenance
+	</h1>
+	<p>Please come back later.</p>
+	</div>
+</body>
+</html>`)
+
+	case "text/plain":
+		return []byte("This page is under maintenance. Please come back later.")
+
+	case "application/json":
+		return []byte("{\"message\": \"This page is under maintenance. Please come back later.\"}")
+	}
+
+	return []byte{}
 }
