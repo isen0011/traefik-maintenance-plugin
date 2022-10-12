@@ -1,6 +1,6 @@
 displayName: Maintenance page
-summary: Show a maintenance page based on host regex and ip whitelist
-iconPath: .assets/icon.png
+summary: Show visitors a maintenance page.
+iconPath: assets/icon.png
 
 type: middleware
 import: github.com/programic/traefik-maintenance-plugin
