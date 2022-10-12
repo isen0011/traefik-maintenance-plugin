@@ -33,8 +33,8 @@ http:
       plugin:
         maintenance: # Plugin name
           informUrl: "http://inform/inform.json"
-          informInterval: 5
-          informTimeout: 3
+          informInterval: 60
+          informTimeout: 5
 ```
 
 ### Properties
