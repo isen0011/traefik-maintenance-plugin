@@ -2,7 +2,7 @@
 
 Traefik maintenance plugin to show visitors a maintenance page. Useful when upgrading a production environment. 
 
-Hosts (by regex) that are under maintenance are retrieved using an http request to an inform url. Permitted ips are retained (such as development) and other visitors receive a maintenance page with status code 503 Service Unavailable.
+Hosts (by regex) that are under maintenance are retrieved using an http request to an inform url. Permitted ips are retained (such as development) and other visitors receive a maintenance page with status code `503 Service Unavailable`.
 
 This plugin returns the correct response based on the `Content-Type` header. Currently `application/json`, `text/plain` and `text/html`.
 
