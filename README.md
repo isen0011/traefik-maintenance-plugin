@@ -62,6 +62,6 @@ $ docker-compose up -d
 1. Go to [maintenance.test](http://maintenance.test). 
 2. You will now see a maintenance page or a welcome page.
 3. Change the ip in file `test/services/inform/inform.json` to your local Docker ip address.
-4. Go back to the [maintenance.test](http://maintenance.test) and check what happened.
+4. Go back to the [maintenance.test](http://maintenance.test) and see what happened.
 
 ### 3. Happy coding!
