@@ -65,3 +65,9 @@ $ docker-compose up -d
 4. Go back to the [maintenance.test](http://maintenance.test) and see what happened.
 
 ### 3. Happy coding!
+
+You can now edit the plugin locally. Don't forget to restart Docker every time:
+
+```bash
+$ docker-compose down && docker-compose up -d
+```
