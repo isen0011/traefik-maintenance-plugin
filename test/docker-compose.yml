@@ -13,7 +13,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./services/traefik/dynamic:/etc/traefik/dynamic
       - ./services/traefik/traefik.yml:/etc/traefik/traefik.yml
-      - ../:/plugins-local/src/github.com/programic/traefik-maintenance-plugin
+      - ../:/plugins-local/src/github.com/isen0011/traefik-maintenance-plugin
 
   test:
     image: nginx:stable-alpine
