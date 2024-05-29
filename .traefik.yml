@@ -2,7 +2,7 @@ displayName: Maintenance Page
 summary: Show visitors a maintenance page.
 iconPath: assets/icon.png
 type: middleware
-import: github.com/programic/traefik-maintenance-plugin
+import: github.com/isen0011/traefik-maintenance-plugin
 
 testData:
   informUrl: "http://inform/inform.json"

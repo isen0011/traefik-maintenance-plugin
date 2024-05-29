@@ -4,7 +4,7 @@
 experimental:
   localPlugins:
     maintenance:
-      moduleName: github.com/programic/traefik-maintenance-plugin
+      moduleName: github.com/isen0011/traefik-maintenance-plugin
 
 api:
   insecure: true
