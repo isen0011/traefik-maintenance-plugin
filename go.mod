@@ -1,3 +1,3 @@
-module github.com/programic/traefik-maintenance-plugin
+module github.com/isen0011/traefik-maintenance-plugin
 
 go 1.19
