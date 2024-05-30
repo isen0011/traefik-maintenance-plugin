@@ -10,6 +10,7 @@ services:
     networks:
       - web
     volumes:
+      - ../assets:/assets
       - /var/run/docker.sock:/var/run/docker.sock
       - ./services/traefik/dynamic:/etc/traefik/dynamic
       - ./services/traefik/traefik.yml:/etc/traefik/traefik.yml

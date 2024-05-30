@@ -3,12 +3,18 @@
     "regex": "maintenance.test",
     "allowIps": [
       "172.18.0.1"
-    ]
-  }, 
+    ],
+    "template": "template.html",
+    "heading": "This page is under custom maintenance",
+    "message": "Please come back later when we have fixed it"
+  },
   {
     "regex": "app.maintenance.test",
     "allowIps": [
       "172.18.0.1"
-    ]
+    ],
+    "template": "template.html",
+    "heading": "This page is under custom maintenance",
+    "message": "Please come back later when we have fixed it"
   }
 ]
