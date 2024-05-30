@@ -6,3 +6,4 @@ http:
           informUrl: "http://inform/inform.json"
           informInterval: 5
           informTimeout: 3
+          baseTemplatePath: "/assets/"
